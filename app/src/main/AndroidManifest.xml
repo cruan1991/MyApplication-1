@@ -16,6 +16,18 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".CreateItem"
+            android:label="@string/title_activity_create_item" >
+        </activity>
+        <activity
+            android:name=".CreateAccount"
+            android:label="@string/title_activity_create_account" >
+        </activity>
+        <activity
+            android:name=".AccountList"
+            android:label="@string/title_activity_account_list" >
+        </activity>
     </application>
 
 </manifest>
