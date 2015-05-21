@@ -27,5 +27,8 @@
     <string name="location_text">Location:</string>
     <string name="get_location">Get Location</string>
     <string name="done">Done</string>
-    <string name="title_activity_account_list">AccountList</string>
+    <string name="title_activity_account_list">Account List</string>
+    <string name="ok">OK</string>
+    <string name="cancel">CANCEL</string>
+    <string name="delete_message">Delete Account?</string>
 </resources>
