@@ -6,6 +6,7 @@ import android.content.ContentValues;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.location.Location;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
@@ -31,11 +32,13 @@ public class CreateItem extends Activity {
     private EditText itemName;
     private EditText amountInput;
     private EditText payer;
+    AppLocationService appLocationService;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_create_item);
+        GPSTracker gps;
 
         eventDate = (EditText) findViewById(R.id.itemDateInput);
         dateFormatter = new SimpleDateFormat("dd-MM-yyyy", Locale.US);
@@ -94,6 +97,36 @@ public class CreateItem extends Activity {
                 startActivityForResult(photoPickerIntent, SELECT_PHOTO);
                 break;
             case R.id.getLocation:
+                gps = new GPSTracker(CreateItem.this);
+                if(gps.canGetLocation()){
+                    double latitude = gps.getLatitude();
+                    double longitude = gps.getLongitude();
+                    //TODO:
+                    //save to database
+                    EditText location = (EditText) findViewById(R.id.locationInput);
+                    location.setText(gps.getAddress());
+
+                    Location location = appLocationService
+                            .getLocation(LocationManager.GPS_PROVIDER);
+
+                    //you can hard-code the lat & long if you have issues with getting it
+                    //remove the below if-condition and use the following couple of lines
+                    //double latitude = 37.422005;
+                    //double longitude = -122.084095
+
+                    if (location != null) {
+                        double latitude = location.getLatitude();
+                        double longitude = location.getLongitude();
+                        LocationAddress locationAddress = new LocationAddress();
+                        locationAddress.getAddressFromLocation(latitude, longitude,
+                                getApplicationContext(), new GeocoderHandler());
+                    } else {
+                        showSettingsAlert();
+                    }
+
+                }else{
+                    gps.showSettingsAlert();
+                }
                 break;
             case R.id.done:
                 String itemname = itemName.getText().toString();
