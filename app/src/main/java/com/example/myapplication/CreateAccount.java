@@ -1,7 +1,10 @@
 package com.example.myapplication;
 
+import android.app.Activity;
 import android.app.DatePickerDialog;
+import android.content.ContentValues;
 import android.content.Intent;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
@@ -24,7 +27,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Locale;
 
-public class CreateAccount extends ActionBarActivity {
+public class CreateAccount extends Activity {
     private final int SELECT_PHOTO = 1;
     private EditText groupName;
     private EditText startDate;
@@ -137,10 +140,28 @@ public class CreateAccount extends ActionBarActivity {
             case R.id.submit:
                 String name = groupName.getText().toString();
                 String startTime = startDate.getText().toString();
-                //photoPath
+
+                //insert account into Account Table
+                ContentValues ctx = new ContentValues();
+                ctx.put(AccountBookDatabase.KEY_ACCTNAME, name);
+                ctx.put(AccountBookDatabase.KEY_DATE_ACCT, startTime);
+                ctx.put(AccountBookDatabase.KEY_LASTUPDATE, startTime);
+                ctx.put(AccountBookDatabase.KEY_PHOTO_ACCT, photoPath);
+                MainActivity.ABD.insert(AccountBookDatabase.Account_table, ctx);
+
+                ctx.clear();
+                Cursor c = MainActivity.ABD.query("SELECT last_insert_rowid()"); //this returns the id of the account just inserted
+                c.moveToFirst();
+                //store common key,value pairs for all members
+                ctx.put(AccountBookDatabase.KEY_ACCTID_MEMBER, c.getInt(0));
+                ctx.put(AccountBookDatabase.KEY_BALANCE, 0);
                 for(int i = 0; i < members.size(); i++){
                     String member = members.get(i).getText().toString();
-                    //insert into database
+
+                    //insert members into Member Table
+                    ctx.put(AccountBookDatabase.KEY_MEMBERNAME, member);
+                    MainActivity.ABD.insert(AccountBookDatabase.Member_table, ctx);
+                    ctx.remove(AccountBookDatabase.KEY_MEMBERNAME); // removes the member name that's already been inserted
                 }
 
                 finish();
