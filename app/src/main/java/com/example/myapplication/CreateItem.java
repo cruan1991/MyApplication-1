@@ -76,9 +76,9 @@ public class CreateItem extends ActionBarActivity {
                 },newCalendar.get(Calendar.YEAR), newCalendar.get(Calendar.MONTH), newCalendar.get(Calendar.DAY_OF_MONTH));
                 datePickerDialog.show();
                 break;
-            case R.id.selectPayerBtn:
+            case R.id.payerInput:
                 break;
-            case R.id.selectPayToBtn:
+            case R.id.payToInput:
                 break;
             case R.id.itemPicPicker:
                 Intent photoPickerIntent = new Intent(Intent.ACTION_PICK);

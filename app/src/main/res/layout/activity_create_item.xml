@@ -93,7 +93,7 @@ android:layout_height="fill_parent" >
         android:ems="10"
         android:layout_alignParentLeft="true"
         android:layout_below="@+id/account"
-        android:onClick="onClick"/>
+        android:onClick="onClick" />
 
     <TextView
         android:id="@+id/payer"
@@ -110,7 +110,8 @@ android:layout_height="fill_parent" >
         android:layout_height="wrap_content"
         android:ems="10"
         android:layout_alignParentLeft="true"
-        android:layout_below="@+id/payer" />
+        android:layout_below="@+id/payer"
+        android:onClick="onClick" />
 
     <TextView
         android:id="@+id/payTo"
@@ -127,7 +128,8 @@ android:layout_height="fill_parent" >
         android:layout_height="wrap_content"
         android:ems="10"
         android:layout_alignParentLeft="true"
-        android:layout_below="@+id/payTo" />
+        android:layout_below="@+id/payTo"
+        android:onClick="onClick" />
 
     <ImageView
         android:id="@+id/itemPic"
