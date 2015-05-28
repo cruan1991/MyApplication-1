@@ -1,6 +1,8 @@
 package com.example.myapplication;
 
+import android.app.Activity;
 import android.app.DatePickerDialog;
+import android.content.ContentValues;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -21,11 +23,14 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 
-public class CreateItem extends ActionBarActivity {
+public class CreateItem extends Activity {
     private final int SELECT_PHOTO = 1;
     private EditText eventDate;
     private SimpleDateFormat dateFormatter;
     private String photoPath;
+    private EditText itemName;
+    private EditText amountInput;
+    private EditText payer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,6 +41,9 @@ public class CreateItem extends ActionBarActivity {
         dateFormatter = new SimpleDateFormat("dd-MM-yyyy", Locale.US);
         eventDate.setText(dateFormatter.format(new Date()));
 
+        itemName = (EditText) findViewById(R.id.itemDateInput);
+        amountInput = (EditText) findViewById(R.id.amountInput);
+        payer = (EditText) findViewById(R.id.payerInput);
     }
 
 
@@ -88,6 +96,18 @@ public class CreateItem extends ActionBarActivity {
             case R.id.getLocation:
                 break;
             case R.id.done:
+                String itemname = itemName.getText().toString();
+                String eventTime = eventDate.getText().toString();
+                double amount = Double.parseDouble(amountInput.getText().toString());
+                String payerName = payer.getText().toString();
+                //insert item into Item Table
+                ContentValues ctx = new ContentValues();
+                ctx.put(AccountBookDatabase.KEY_ITEMNAME, itemname);
+                ctx.put(AccountBookDatabase.KEY_DATE_ITEM, eventTime);
+                ctx.put(AccountBookDatabase.KEY_VALUE, amount);
+                ctx.put(AccountBookDatabase.KEY_BUYER, payerName);
+                ctx.put(AccountBookDatabase.KEY_PHOTO_ITEM, photoPath);
+                ctx.put();
 
                 finish();
                 break;
