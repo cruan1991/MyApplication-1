@@ -6,6 +6,8 @@ import android.content.ContentValues;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.location.Address;
+import android.location.Geocoder;
 import android.location.Location;
 import android.net.Uri;
 import android.os.Bundle;
@@ -16,12 +18,15 @@ import android.view.View;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 
 public class CreateItem extends Activity {
@@ -32,15 +37,15 @@ public class CreateItem extends Activity {
     private EditText itemName;
     private EditText amountInput;
     private EditText payer;
+    private EditText location;
 
     GPSTracker gps;
-    double latitude;
-    double longitude;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_create_item);
+        gps = new GPSTracker(CreateItem.this);
 
         eventDate = (EditText) findViewById(R.id.itemDateInput);
         dateFormatter = new SimpleDateFormat("dd-MM-yyyy", Locale.US);
@@ -49,6 +54,7 @@ public class CreateItem extends Activity {
         itemName = (EditText) findViewById(R.id.itemDateInput);
         amountInput = (EditText) findViewById(R.id.amountInput);
         payer = (EditText) findViewById(R.id.payerInput);
+        location = (EditText) findViewById(R.id.locationInput);
     }
 
 
@@ -76,7 +82,7 @@ public class CreateItem extends Activity {
 
     public void onClick(View view){
         switch(view.getId()){
-            case R.id.selectDateBtn:
+            case R.id.itemDateInput:
                 Calendar newCalendar = Calendar.getInstance();
                 DatePickerDialog datePickerDialog = new DatePickerDialog(this, new DatePickerDialog.OnDateSetListener() {
 
@@ -89,9 +95,9 @@ public class CreateItem extends Activity {
                 },newCalendar.get(Calendar.YEAR), newCalendar.get(Calendar.MONTH), newCalendar.get(Calendar.DAY_OF_MONTH));
                 datePickerDialog.show();
                 break;
-            case R.id.selectPayerBtn:
+            case R.id.payerInput:
                 break;
-            case R.id.selectPayToBtn:
+            case R.id.payToInput:
                 break;
             case R.id.itemPicPicker:
                 Intent photoPickerIntent = new Intent(Intent.ACTION_PICK);
@@ -99,12 +105,31 @@ public class CreateItem extends Activity {
                 startActivityForResult(photoPickerIntent, SELECT_PHOTO);
                 break;
             case R.id.getLocation:
-                gps = new GPSTracker(getApplicationContext());
-                Location loc = gps.getLocation();
-                double latitude = loc.getLatitude();
-                double longitude = loc.getLongitude();
+                double latitude = gps.getLatitude();
+                double longitude = gps.getLongitude();
+                System.out.println(latitude);
+                System.out.println(longitude);
+                Geocoder geocoder= new Geocoder(this, Locale.ENGLISH);
 
+                try {
+                    List<Address> addresses = geocoder.getFromLocation(latitude, longitude, 1);
 
+                    if(addresses != null) {
+                        Address fetchedAddress = addresses.get(0);
+                        StringBuilder strAddress = new StringBuilder();
+                        for(int i=0; i<fetchedAddress.getMaxAddressLineIndex(); i++) {
+                            strAddress.append(fetchedAddress.getAddressLine(i)).append("\n");
+                        }
+                        location.setText(strAddress.toString());
+
+                    } else {
+                        location.setText("No location found");
+                    }
+                }
+                catch (IOException e) {
+                    e.printStackTrace();
+                    Toast.makeText(getApplicationContext(), "Could not get address.", Toast.LENGTH_LONG).show();
+                }
 
                 break;
             case R.id.done:

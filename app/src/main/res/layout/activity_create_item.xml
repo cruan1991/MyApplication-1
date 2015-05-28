@@ -24,19 +24,11 @@ android:layout_height="fill_parent" >
     <EditText
         android:id="@+id/itemDateInput"
         android:text=""
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:minEms ="10"
+        android:ems ="10"
         android:layout_alignParentLeft="true"
-        android:layout_below="@+id/itemDate" />
-
-    <Button
-        android:id="@+id/selectDateBtn"
-        android:text=">"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_toRightOf="@+id/itemDateInput"
-        android:layout_alignBottom="@+id/itemDateInput"
+        android:layout_below="@+id/itemDate"
         android:onClick="onClick" />
 
     <TextView
@@ -101,7 +93,7 @@ android:layout_height="fill_parent" >
         android:ems="10"
         android:layout_alignParentLeft="true"
         android:layout_below="@+id/account"
-        android:onClick="onClick"/>
+        android:onClick="onClick" />
 
     <TextView
         android:id="@+id/payer"
@@ -114,19 +106,11 @@ android:layout_height="fill_parent" >
 
     <EditText
         android:id="@+id/payerInput"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:minEms="10"
+        android:ems="10"
         android:layout_alignParentLeft="true"
-        android:layout_below="@+id/payer" />
-
-    <Button
-        android:id="@+id/selectPayerBtn"
-        android:text=">"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_toRightOf="@+id/payerInput"
-        android:layout_alignBottom="@+id/payerInput"
+        android:layout_below="@+id/payer"
         android:onClick="onClick" />
 
     <TextView
@@ -140,19 +124,11 @@ android:layout_height="fill_parent" >
 
     <EditText
         android:id="@+id/payToInput"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:minEms="10"
+        android:ems="10"
         android:layout_alignParentLeft="true"
-        android:layout_below="@+id/payTo" />
-
-    <Button
-        android:id="@+id/selectPayToBtn"
-        android:text=">"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_toRightOf="@+id/payToInput"
-        android:layout_alignBottom="@+id/payToInput"
+        android:layout_below="@+id/payTo"
         android:onClick="onClick" />
 
     <ImageView
