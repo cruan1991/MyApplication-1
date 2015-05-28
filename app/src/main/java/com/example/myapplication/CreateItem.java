@@ -6,6 +6,7 @@ import android.content.ContentValues;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.location.Location;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
@@ -31,6 +32,10 @@ public class CreateItem extends Activity {
     private EditText itemName;
     private EditText amountInput;
     private EditText payer;
+
+    GPSTracker gps;
+    double latitude;
+    double longitude;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -94,6 +99,13 @@ public class CreateItem extends Activity {
                 startActivityForResult(photoPickerIntent, SELECT_PHOTO);
                 break;
             case R.id.getLocation:
+                gps = new GPSTracker(getApplicationContext());
+                Location loc = gps.getLocation();
+                double latitude = loc.getLatitude();
+                double longitude = loc.getLongitude();
+
+
+
                 break;
             case R.id.done:
                 String itemname = itemName.getText().toString();
@@ -107,7 +119,7 @@ public class CreateItem extends Activity {
                 ctx.put(AccountBookDatabase.KEY_VALUE, amount);
                 ctx.put(AccountBookDatabase.KEY_BUYER, payerName);
                 ctx.put(AccountBookDatabase.KEY_PHOTO_ITEM, photoPath);
-                ctx.put();
+                //ctx.put();
 
                 finish();
                 break;
