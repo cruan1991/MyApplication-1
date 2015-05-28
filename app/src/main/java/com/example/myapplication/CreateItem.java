@@ -63,7 +63,7 @@ public class CreateItem extends ActionBarActivity {
 
     public void onClick(View view){
         switch(view.getId()){
-            case R.id.selectDateBtn:
+            case R.id.itemDateInput:
                 Calendar newCalendar = Calendar.getInstance();
                 DatePickerDialog datePickerDialog = new DatePickerDialog(this, new DatePickerDialog.OnDateSetListener() {
 

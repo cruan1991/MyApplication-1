@@ -11,6 +11,7 @@ import android.text.InputType;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -120,9 +121,18 @@ public class CreateAccount extends ActionBarActivity {
             case R.id.addMemberLayout:
                 EditText newMember = new EditText(this);
                 newMember.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT)); // Pass two args; must be LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT, or an integer pixel value.
+                Button remove = new Button(this);
+                remove.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT)); // Pass two args; must be LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT, or an integer pixel value.
+                remove.setText("remove");
+                LinearLayout ll = new LinearLayout(this);
+                ll.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT)); // Pass two args; must be LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT, or an integer pixel value.
+                ll.setOrientation(LinearLayout.VERTICAL);
+                ll.addView(newMember);
+                ll.addView(remove);
                 LinearLayout membersLayout = (LinearLayout) findViewById(R.id.membersLayout);
-                membersLayout.addView(newMember);
+                membersLayout.addView(ll);
                 members.add(newMember);
+                remove.setOnClickListener(new RemoveButtonListener(ll, member));
                 break;
             case R.id.submit:
                 String name = groupName.getText().toString();
@@ -135,6 +145,22 @@ public class CreateAccount extends ActionBarActivity {
 
                 finish();
                 break;
+        }
+    }
+
+    private class RemoveButtonListener implements View.OnClickListener {
+        private LinearLayout ll;
+        private EditText member;
+
+        public RemoveButtonListener(LinearLayout ll, EditText member) {
+            this.ll = ll;
+            this.member = member;
+        }
+
+        @Override
+        public void onClick(View v) {
+            ((LinearLayout) ll.getParent()).removeView(ll);
+            members.remove(member);
         }
     }
 }
