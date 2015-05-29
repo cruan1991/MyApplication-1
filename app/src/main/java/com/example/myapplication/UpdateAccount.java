@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.media.ThumbnailUtils;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
@@ -30,10 +31,11 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Locale;
 
-public class CreateAccount extends Activity {
+public class UpdateAccount extends Activity {
     private final int SELECT_PHOTO = 1;
     private EditText groupName;
     private EditText startDate;
+    private ImageView groupPic;
     private EditText member;
     private ArrayList<EditText> members;
     private LinearLayout membersLayout;
@@ -56,11 +58,41 @@ public class CreateAccount extends Activity {
         startDate = (EditText) findViewById(R.id.startDatePicker);
         startDate.setInputType(InputType.TYPE_NULL);
 
+        groupPic = (ImageView) findViewById(R.id.groupPic);
+
         member = (EditText) findViewById(R.id.member1);
         members = new ArrayList<EditText>();
         members.add(member);
 
         membersLayout = (LinearLayout) findViewById(R.id.membersLayout);
+
+        String groupNameDB;
+        String startDateDB;
+        String[] membersDB;
+        String phonePathDB;
+        //TODO: retrieve information from database and initialize above variables
+        groupName.setText(groupNameDB);
+        startDate.setText(startDateDB);
+        int target = groupPic.getHeight();
+        Bitmap thumbImage = ThumbnailUtils.extractThumbnail(BitmapFactory.decodeFile(phonePathDB, target, target);
+        groupPic.setImageBitmap(thumbImage);
+        member.setText(membersDB[0]);
+        for(int i = 1; i < membersDB.length; i++){
+            EditText newMember = new EditText(this);
+            newMember.setLayoutParams(new TableRow.LayoutParams(0, TableRow.LayoutParams.WRAP_CONTENT, 1f));
+            newMember.setText(membersDB[i]);
+            Button remove = new Button(this);
+            remove.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+            remove.setText("remove");
+            LinearLayout ll = new LinearLayout(this);
+            ll.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+            ll.setOrientation(LinearLayout.HORIZONTAL);
+            ll.addView(newMember);
+            ll.addView(remove);
+            membersLayout.addView(ll);
+            members.add(newMember);
+            remove.setOnClickListener(new RemoveButtonListener(ll, member));
+        }
     }
 
     @Override
@@ -96,7 +128,6 @@ public class CreateAccount extends Activity {
                         final Uri imageUri = imageReturnedIntent.getData();
                         final InputStream imageStream = getContentResolver().openInputStream(imageUri);
                         final Bitmap selectedImage = BitmapFactory.decodeStream(imageStream);
-                        ImageView groupPic = (ImageView) findViewById(R.id.groupPic);
                         groupPic.setImageBitmap(selectedImage);
                         photoPath = imageUri.toString();
                     } catch (FileNotFoundException e) {
@@ -172,7 +203,7 @@ public class CreateAccount extends Activity {
                 ctx.put(AccountBookDatabase.KEY_BALANCE, 0);
                 for(int i = 0; i < members.size(); i++){
                     String member = members.get(i).getText().toString();
-//TODO: only insert if member.equals("") is not null, if all member are "", error message: showErrorDialog("Members cannot be blank!");
+                    //TODO: only insert if member.equals("") is not null, if all member are "", error message: showErrorDialog("Members cannot be blank!");
                     //insert members into Member Table
                     ctx.put(AccountBookDatabase.KEY_MEMBERNAME, member);
                     MainActivity.ABD.insert(AccountBookDatabase.Member_table, ctx);

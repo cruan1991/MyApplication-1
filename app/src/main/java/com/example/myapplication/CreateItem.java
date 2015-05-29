@@ -12,7 +12,6 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.location.Address;
 import android.location.Geocoder;
-import android.location.Location;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
@@ -20,14 +19,12 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.ListView;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
@@ -40,6 +37,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 
@@ -57,8 +55,8 @@ public class CreateItem extends Activity {
     private LinearLayout paidByList;
     private LinearLayout paidForList;
     private RadioGroup accountList;
-//    private PaidByViewAdapter paidByViewAdapter;
-//    private PaidForViewAdapter paidForViewAdapter;
+    private double longitude;
+    private double latitude;
 
     GPSTracker gps;
 
@@ -366,8 +364,8 @@ public class CreateItem extends Activity {
                 startActivityForResult(photoPickerIntent, SELECT_PHOTO);
                 break;
             case R.id.getLocation:
-                double latitude = gps.getLatitude();
-                double longitude = gps.getLongitude();
+                latitude = gps.getLatitude();
+                longitude = gps.getLongitude();
                 System.out.println(latitude);
                 System.out.println(longitude);
                 Geocoder geocoder= new Geocoder(this, Locale.ENGLISH);
@@ -395,9 +393,62 @@ public class CreateItem extends Activity {
                 break;
             case R.id.done:
                 String itemname = itemName.getText().toString();
+                if(itemname.equals("")){
+                    showErrorDialog("Item name cannot be blank!");
+                    break;
+                }
+
+                accountName = itemAccount.getText().toString();
+                if(accountName.equals("")){
+                    showErrorDialog("Account cannot be blank!");
+                    break;
+                }
+
                 String eventTime = eventDate.getText().toString();
+                if(eventTime.equals("")){
+                    showErrorDialog("Date cannot be blank!");
+                    break;
+                }
+
                 double amount = Double.parseDouble(amountInput.getText().toString());
+                if(amount == 0){
+                    showErrorDialog("Amount cannot be blank!");
+                    break;
+                }
+
                 String payerName = paidBy.getText().toString();
+                if(payerName.equals("")){
+                    showErrorDialog("Paid by field cannot be blank!");
+                    break;
+                }
+
+                String[] payers = payerName.split(",");
+
+                String paidToName = paidTo.getText().toString();
+                if(paidToName.equals("")){
+                    showErrorDialog("Paid for field cannot be blank!");
+                    break;
+                }
+
+                String[] paidTos = paidToName.split(",");
+                HashMap<String, Double> map = new HashMap<>();
+                double memberCost = amount / paidTos.length;
+                for(int i = 0; i < paidTos.length; i++){
+                    map.put(paidTos[i], memberCost);
+                }
+
+                for(int i = 0; i < payers.length; i++){
+                    String[] token = payers[i].split(":");
+                    double cost = Double.parseDouble(token[1]);
+                    if(map.containsKey(token[0])){
+                        map.put(token[0], map.get(token[0]) - cost);
+                    } else {
+                        map.put(token[0], -cost);
+                    }
+                }
+
+                //TODO: need to retrieve current balance for each member in map.key first, then add map.value to it and update table
+                //TODO: save latitude and longitude
                 //insert item into Item Table
                 ContentValues ctx = new ContentValues();
                 ctx.put(AccountBookDatabase.KEY_ITEMNAME, itemname);
