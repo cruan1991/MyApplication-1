@@ -52,7 +52,7 @@ public class CreateItem extends Activity {
     private EditText paidBy;
     private EditText paidTo;
     private EditText location;
-    private LinearLayout paidByList;
+    private RadioGroup paidByList;
     private LinearLayout paidForList;
     private RadioGroup accountList;
     private double longitude;
@@ -209,33 +209,14 @@ public class CreateItem extends Activity {
                 memberList.add("Mary");
                 memberList.add("John");
 
-                paidByList = (LinearLayout) paidByDialog.findViewById(R.id.paidByList);
+                paidByList = (RadioGroup) paidByDialog.findViewById(R.id.paidByList);
 
                 for(int i = 0; i < memberList.size(); i++){
-                    LinearLayout memberItem = new LinearLayout(this);
-                    memberItem.setLayoutParams(new LinearLayout.LayoutParams(
-                            LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
-                    memberItem.setOrientation(LinearLayout.HORIZONTAL);
-
-                    CheckBox member = new CheckBox(this);
+                    RadioButton member = new RadioButton(this);
                     member.setLayoutParams(new LinearLayout.LayoutParams(
                             LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT));
                     member.setText(memberList.get(i));
-                    memberItem.addView(member);
-
-                    TextView dollarSign = new TextView(this);
-                    dollarSign.setText("$");
-                    LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(
-                            LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-                    layoutParams.setMargins(10,0,0,0);
-                    memberItem.addView(dollarSign, layoutParams);
-
-                    EditText amount = new EditText(this);
-                    amount.setLayoutParams(new LinearLayout.LayoutParams(
-                            200, LinearLayout.LayoutParams.WRAP_CONTENT));
-                    memberItem.addView(amount);
-
-                    paidByList.addView(memberItem);
+                    paidByList.addView(member);
                 }
 
                 CheckBox selectAll = (CheckBox) paidByDialog.findViewById(R.id.paidBySelectAll);
@@ -351,7 +332,10 @@ public class CreateItem extends Activity {
                             }
                         }
 
-                        paidTo.setText(result);
+                        if(!result.equals("")){
+                            paidTo.setText(result.substring(0, result.length()-1));
+                        }
+
                         paidForDialog.dismiss();
                     }
                 });
@@ -422,8 +406,6 @@ public class CreateItem extends Activity {
                     break;
                 }
 
-                String[] payers = payerName.split(",");
-
                 String paidToName = paidTo.getText().toString();
                 if(paidToName.equals("")){
                     showErrorDialog("Paid for field cannot be blank!");
@@ -431,23 +413,12 @@ public class CreateItem extends Activity {
                 }
 
                 String[] paidTos = paidToName.split(",");
-                HashMap<String, Double> map = new HashMap<>();
                 double memberCost = amount / paidTos.length;
                 for(int i = 0; i < paidTos.length; i++){
-                    map.put(paidTos[i], memberCost);
+                    //TODO: add memberCost to each paidTos[i]'s balance
                 }
 
-                for(int i = 0; i < payers.length; i++){
-                    String[] token = payers[i].split(":");
-                    double cost = Double.parseDouble(token[1]);
-                    if(map.containsKey(token[0])){
-                        map.put(token[0], map.get(token[0]) - cost);
-                    } else {
-                        map.put(token[0], -cost);
-                    }
-                }
-
-                //TODO: need to retrieve current balance for each member in map.key first, then add map.value to it and update table
+                //TODO: subtract amount from payerName's balance
                 //TODO: save latitude and longitude
                 //insert item into Item Table
                 ContentValues ctx = new ContentValues();
