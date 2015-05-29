@@ -20,8 +20,7 @@ import java.util.ArrayList;
 public class AccountList extends ActionBarActivity {
 
     private AccountViewAdapter mAdapter;
-    private static ArrayList<String> favorites;
-    private static ArrayList<Account> artists;
+    private static ArrayList<Account> accounts;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -29,20 +28,19 @@ public class AccountList extends ActionBarActivity {
         setContentView(R.layout.activity_account_list);
 
         ListView listView = (ListView) findViewById(R.id.listView);
-        artists = new ArrayList<>();
-        favorites = new ArrayList<>();
-        artists.add(new Account("Account1", "default_user_image"));
-        artists.add(new Account("Account2", "default_user_image"));
+        accounts = new ArrayList<>();
+        accounts.add(new Account("Account1", "default_user_image"));
+        accounts.add(new Account("Account2", "default_user_image"));
 
-        mAdapter = new AccountViewAdapter(this, R.layout.account_list_item, artists);
+        mAdapter = new AccountViewAdapter(this, R.layout.account_list_item, accounts);
         listView.setAdapter(mAdapter);
 
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Intent singlePictureIntent = new Intent(getApplicationContext(), CreateItem.class); //change activity name here
-                singlePictureIntent.putExtra("path", artists.get(position).getPic());
-                singlePictureIntent.putExtra("name", artists.get(position).getName());
+                singlePictureIntent.putExtra("path", accounts.get(position).getPic());
+                singlePictureIntent.putExtra("name", accounts.get(position).getName());
                 startActivity(singlePictureIntent);
             }
         });
