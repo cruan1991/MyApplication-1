@@ -12,6 +12,7 @@ import android.graphics.BitmapFactory;
 import android.media.ThumbnailUtils;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.support.v7.app.ActionBarActivity;
 import android.text.InputType;
 import android.view.Menu;
@@ -24,8 +25,13 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TableRow;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
+import java.nio.channels.FileChannel;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -40,7 +46,7 @@ public class UpdateAccount extends Activity {
     private ArrayList<EditText> members;
     private LinearLayout membersLayout;
     private SimpleDateFormat dateFormatter;
-    private String photoPath;
+    private Uri imageUri;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -74,7 +80,7 @@ public class UpdateAccount extends Activity {
         groupName.setText(groupNameDB);
         startDate.setText(startDateDB);
         int target = groupPic.getHeight();
-        Bitmap thumbImage = ThumbnailUtils.extractThumbnail(BitmapFactory.decodeFile(phonePathDB, target, target);
+        Bitmap thumbImage = ThumbnailUtils.extractThumbnail(BitmapFactory.decodeFile(MainActivity.mDirPath + phonePathDB, target, target));
         groupPic.setImageBitmap(thumbImage);
         member.setText(membersDB[0]);
         for(int i = 1; i < membersDB.length; i++){
@@ -125,11 +131,12 @@ public class UpdateAccount extends Activity {
             case SELECT_PHOTO:
                 if(resultCode == RESULT_OK){
                     try {
-                        final Uri imageUri = imageReturnedIntent.getData();
-                        final InputStream imageStream = getContentResolver().openInputStream(imageUri);
-                        final Bitmap selectedImage = BitmapFactory.decodeStream(imageStream);
+                        imageUri = imageReturnedIntent.getData();
+                        InputStream imageStream = getContentResolver().openInputStream(imageUri);
+                        Bitmap selectedImage = BitmapFactory.decodeStream(imageStream);
+                        ImageView groupPic = (ImageView) findViewById(R.id.groupPic);
                         groupPic.setImageBitmap(selectedImage);
-                        photoPath = imageUri.toString();
+
                     } catch (FileNotFoundException e) {
                         e.printStackTrace();
                     }
@@ -186,13 +193,26 @@ public class UpdateAccount extends Activity {
                     break;
                 }
 
-                //TODO: check if account name is used before
+                //TODO: check if account name is used before. if used, showErrorDialog("This account name already exist.");
+                File old = new File(getRealPathFromURI(imageUri));
+                String imagePath = old.getName();
+                File f = new File(MainActivity.mDirPath + imagePath);
+                if (!f.exists())
+                {
+                    try {
+                        f.createNewFile();
+                        copyFile(old, f);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+
                 //insert account into Account Table
                 ContentValues ctx = new ContentValues();
                 ctx.put(AccountBookDatabase.KEY_ACCTNAME, name);
                 ctx.put(AccountBookDatabase.KEY_DATE_ACCT, startTime);
                 ctx.put(AccountBookDatabase.KEY_LASTUPDATE, startTime);
-                ctx.put(AccountBookDatabase.KEY_PHOTO_ACCT, photoPath);
+                ctx.put(AccountBookDatabase.KEY_PHOTO_ACCT, imagePath);
                 MainActivity.ABD.insert(AccountBookDatabase.Account_table, ctx);
 
                 ctx.clear();
@@ -201,9 +221,10 @@ public class UpdateAccount extends Activity {
                 //store common key,value pairs for all members
                 ctx.put(AccountBookDatabase.KEY_ACCTID_MEMBER, c.getInt(0));
                 ctx.put(AccountBookDatabase.KEY_BALANCE, 0);
+
                 for(int i = 0; i < members.size(); i++){
                     String member = members.get(i).getText().toString();
-                    //TODO: only insert if member.equals("") is not null, if all member are "", error message: showErrorDialog("Members cannot be blank!");
+//TODO: only insert if member.equals("") is not true, if all member are "", error message: showErrorDialog("Members cannot be blank!");
                     //insert members into Member Table
                     ctx.put(AccountBookDatabase.KEY_MEMBERNAME, member);
                     MainActivity.ABD.insert(AccountBookDatabase.Member_table, ctx);
@@ -242,5 +263,34 @@ public class UpdateAccount extends Activity {
                     }
                 });
         alertDialog.show();
+    }
+
+    private void copyFile(File sourceFile, File destFile) throws IOException {
+        if (!sourceFile.exists()) {
+            return;
+        }
+
+        FileChannel source = null;
+        FileChannel destination = null;
+        source = new FileInputStream(sourceFile).getChannel();
+        destination = new FileOutputStream(destFile).getChannel();
+        if (destination != null && source != null) {
+            destination.transferFrom(source, 0, source.size());
+        }
+        if (source != null) {
+            source.close();
+        }
+        if (destination != null) {
+            destination.close();
+        }
+    }
+
+    private String getRealPathFromURI(Uri contentUri) {
+
+        String[] proj = { MediaStore.Video.Media.DATA };
+        Cursor cursor = managedQuery(contentUri, proj, null, null, null);
+        int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
+        cursor.moveToFirst();
+        return cursor.getString(column_index);
     }
 }

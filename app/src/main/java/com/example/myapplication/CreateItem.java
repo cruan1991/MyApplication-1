@@ -14,6 +14,7 @@ import android.location.Address;
 import android.location.Geocoder;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.Menu;
@@ -30,9 +31,13 @@ import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.channels.FileChannel;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -57,6 +62,7 @@ public class CreateItem extends Activity {
     private RadioGroup accountList;
     private double longitude;
     private double latitude;
+    private Uri imageUri;
 
     GPSTracker gps;
 
@@ -159,13 +165,13 @@ public class CreateItem extends Activity {
                     @Override
                     public void onClick(View v) {
                         int size = accountList.getChildCount();
-                        String result = "";
                         RadioButton rb;
 
                         for(int i = 0; i < size; i++){
                             rb = (RadioButton) accountList.getChildAt(i);
                             if(rb.isChecked()){
-                                itemAccount.setText(rb.getText().toString());
+                                itemAccount.setText(rb.getText());
+                                break;
                             }
                         }
 
@@ -219,42 +225,22 @@ public class CreateItem extends Activity {
                     paidByList.addView(member);
                 }
 
-                CheckBox selectAll = (CheckBox) paidByDialog.findViewById(R.id.paidBySelectAll);
-                selectAll.setOnClickListener(new View.OnClickListener(){
-                    @Override
-                    public void onClick(View v) {
-                        int size = paidByList.getChildCount();
-                        boolean checked = ((CheckBox)v).isChecked();
-                        for(int i = 0; i < size; i++) {
-                            LinearLayout ll = (LinearLayout) paidByList.getChildAt(i);
-                            CheckBox cb = (CheckBox)ll.getChildAt(0);
-                            cb.setChecked(checked);
-                        }
-                    }
-                });
-
                 Button paidByOKButton = (Button) paidByDialog.findViewById(R.id.paidByOK);
                 paidByOKButton.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
                         int size = paidByList.getChildCount();
                         String result = "";
-                        LinearLayout ll;
-                        EditText et;
-                        String member, amount;
-                        CheckBox cb;
+                        RadioButton rb;
 
                         for(int i = 0; i < size; i++){
-                            ll = (LinearLayout) paidByList.getChildAt(i);
-                            cb = (CheckBox)ll.getChildAt(0);
-                            if(cb.isChecked()){
-                                member = cb.getText().toString();
-                                et = (EditText)ll.getChildAt(2);
-                                amount = et.getText().toString();
-                                result += member + ":" + amount + ",";
+                            rb = (RadioButton) accountList.getChildAt(i);
+                            if(rb.isChecked()){
+                                paidBy.setText(rb.getText());
+                                break;
                             }
                         }
-                        paidBy.setText(result);
+
                         paidByDialog.dismiss();
                     }
                 });
@@ -419,6 +405,20 @@ public class CreateItem extends Activity {
                 }
 
                 //TODO: subtract amount from payerName's balance
+
+                File old = new File(getRealPathFromURI(imageUri));
+                String imagePath = old.getName();
+                File f = new File(MainActivity.mDirPath + imagePath);
+                if (!f.exists())
+                {
+                    try {
+                        f.createNewFile();
+                        copyFile(old, f);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+
                 //TODO: save latitude and longitude
                 //insert item into Item Table
                 ContentValues ctx = new ContentValues();
@@ -455,9 +455,9 @@ public class CreateItem extends Activity {
             case SELECT_PHOTO:
                 if(resultCode == RESULT_OK){
                     try {
-                        final Uri imageUri = imageReturnedIntent.getData();
-                        final InputStream imageStream = getContentResolver().openInputStream(imageUri);
-                        final Bitmap selectedImage = BitmapFactory.decodeStream(imageStream);
+                        imageUri = imageReturnedIntent.getData();
+                        InputStream imageStream = getContentResolver().openInputStream(imageUri);
+                        Bitmap selectedImage = BitmapFactory.decodeStream(imageStream);
                         ImageView itemPic = (ImageView) findViewById(R.id.itemPic);
                         itemPic.setImageBitmap(selectedImage);
                         photoPath = imageUri.toString();
@@ -467,5 +467,34 @@ public class CreateItem extends Activity {
                 }
                 break;
         }
+    }
+
+    private void copyFile(File sourceFile, File destFile) throws IOException {
+        if (!sourceFile.exists()) {
+            return;
+        }
+
+        FileChannel source = null;
+        FileChannel destination = null;
+        source = new FileInputStream(sourceFile).getChannel();
+        destination = new FileOutputStream(destFile).getChannel();
+        if (destination != null && source != null) {
+            destination.transferFrom(source, 0, source.size());
+        }
+        if (source != null) {
+            source.close();
+        }
+        if (destination != null) {
+            destination.close();
+        }
+    }
+
+    private String getRealPathFromURI(Uri contentUri) {
+
+        String[] proj = { MediaStore.Video.Media.DATA };
+        Cursor cursor = managedQuery(contentUri, proj, null, null, null);
+        int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
+        cursor.moveToFirst();
+        return cursor.getString(column_index);
     }
 }
