@@ -37,4 +37,8 @@
     <string name="select_account">Select Account</string>
     <string name="title_activity_update_account">UpdateAccount</string>
     <string name="title_activity_activity_map">ActivityMap</string>
+    <string name="title_activity_account_detail">AccountDetail</string>
+
+<!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

@@ -129,7 +129,7 @@ public class CreateItem extends Activity {
                 accountSelectDialog.setTitle(R.string.select_account);
 
                 //TODO: check query
-                ArrayList<String> accounts = new ArrayList<String>();
+                accountList = (RadioGroup) accountSelectDialog.findViewById(R.id.selectAccountList);
                 String query = "select acctname from account";
                 cursor = MainActivity.ABD.query(query);
                 if(cursor != null){
@@ -141,23 +141,13 @@ public class CreateItem extends Activity {
                 }
 
                 for(int i = 0; i < count; i++){
-                    accounts.add(cursor.getString(cursor.getColumnIndex(AccountBookDatabase.KEY_ACCTNAME)));
-                    cursor.moveToNext();
-                }
-
-                //for testing only
-                accounts.add("account1");
-                accounts.add("account2");
-                accounts.add("account3");
-
-                accountList = (RadioGroup) accountSelectDialog.findViewById(R.id.selectAccountList);
-
-                for(int i = 0; i < accounts.size(); i++){
+                    String accountName = cursor.getString(cursor.getColumnIndex(AccountBookDatabase.KEY_ACCTNAME));
                     RadioButton account = new RadioButton(this);
                     account.setLayoutParams(new LinearLayout.LayoutParams(
                             LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT));
-                    account.setText(accounts.get(i));
+                    account.setText(accountName);
                     accountList.addView(account);
+                    cursor.moveToNext();
                 }
 
                 Button selectAccountOKButton = (Button) accountSelectDialog.findViewById(R.id.accountSelectOK);
@@ -192,7 +182,8 @@ public class CreateItem extends Activity {
                     showErrorDialog("Select account first!");
                     break;
                 }
-                ArrayList<String> memberList = new ArrayList<String>();
+
+                paidByList = (RadioGroup) paidByDialog.findViewById(R.id.paidByList);
 
                 //TODO: check query
                 query = "select membername from member where acctname = '" + accountName + "'";
@@ -206,23 +197,15 @@ public class CreateItem extends Activity {
                 }
 
                 for(int i = 0; i < count; i++){
-                    memberList.add(cursor.getString(cursor.getColumnIndex(AccountBookDatabase.KEY_MEMBERNAME)));
-                    cursor.moveToNext();
-                }
+                    String memberName = cursor.getString(cursor.getColumnIndex(AccountBookDatabase.KEY_MEMBERNAME));
 
-                //test only, can be removed
-                memberList.add("Tom");
-                memberList.add("Mary");
-                memberList.add("John");
-
-                paidByList = (RadioGroup) paidByDialog.findViewById(R.id.paidByList);
-
-                for(int i = 0; i < memberList.size(); i++){
                     RadioButton member = new RadioButton(this);
                     member.setLayoutParams(new LinearLayout.LayoutParams(
                             LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT));
-                    member.setText(memberList.get(i));
+                    member.setText(memberName);
                     paidByList.addView(member);
+
+                    cursor.moveToNext();
                 }
 
                 Button paidByOKButton = (Button) paidByDialog.findViewById(R.id.paidByOK);
@@ -257,7 +240,8 @@ public class CreateItem extends Activity {
                     showErrorDialog("Select account first!");
                     break;
                 }
-                memberList = new ArrayList<String>();
+
+                paidForList = (LinearLayout) paidForDialog.findViewById(R.id.paidForList);
 
                 //TODO: check query
                 query = "select membername from member where acctname = '" + accountName + "'";
@@ -271,23 +255,15 @@ public class CreateItem extends Activity {
                 }
 
                 for(int i = 0; i < count; i++){
-                    memberList.add(cursor.getString(cursor.getColumnIndex(AccountBookDatabase.KEY_MEMBERNAME)));
-                    cursor.moveToNext();
-                }
+                    String memberName = cursor.getString(cursor.getColumnIndex(AccountBookDatabase.KEY_MEMBERNAME));
 
-                //test only, can be removed
-                memberList.add("Tom");
-                memberList.add("Mary");
-                memberList.add("John");
-
-                paidForList = (LinearLayout) paidForDialog.findViewById(R.id.paidForList);
-
-                for(int i = 0; i < memberList.size(); i++){
                     CheckBox member = new CheckBox(this);
                     member.setLayoutParams(new LinearLayout.LayoutParams(
                             LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT));
-                    member.setText(memberList.get(i));
+                    member.setText(memberName);
                     paidForList.addView(member);
+
+                    cursor.moveToNext();
                 }
 
                 CheckBox selectAll2 = (CheckBox) paidForDialog.findViewById(R.id.paidBySelectAll);
@@ -406,16 +382,41 @@ public class CreateItem extends Activity {
 
                 //TODO: subtract amount from payerName's balance
 
-                File old = new File(getRealPathFromURI(imageUri));
-                String imagePath = old.getName();
-                File f = new File(MainActivity.mDirPath + imagePath);
-                if (!f.exists())
-                {
-                    try {
-                        f.createNewFile();
-                        copyFile(old, f);
-                    } catch (IOException e) {
-                        e.printStackTrace();
+                String imagePath = "";
+                if(imageUri == null){
+                    Bitmap bmp = BitmapFactory.decodeResource(getResources(),
+                            R.drawable.default_user_image);
+                    imagePath = "default_user_image.png";
+                    File file = new File(MainActivity.mDirPath + imagePath);
+                    if (!file.exists()){
+                        FileOutputStream out = null;
+                        try {
+                            out = new FileOutputStream(file);
+                            bmp.compress(Bitmap.CompressFormat.PNG, 100, out);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        } finally {
+                            try {
+                                if (out != null) {
+                                    out.close();
+                                }
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }
+                } else {
+                    File old = new File(getRealPathFromURI(imageUri));
+                    imagePath = old.getName();
+                    File f = new File(MainActivity.mDirPath + imagePath);
+                    if (!f.exists())
+                    {
+                        try {
+                            f.createNewFile();
+                            copyFile(old, f);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
                     }
                 }
 

@@ -3,6 +3,7 @@ package com.example.myapplication;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.database.Cursor;
 import android.net.Uri;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
@@ -11,7 +12,9 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.RadioButton;
 import android.widget.TextView;
 
 import java.util.ArrayList;
@@ -28,9 +31,26 @@ public class AccountList extends ActionBarActivity {
         setContentView(R.layout.activity_account_list);
 
         ListView listView = (ListView) findViewById(R.id.listView);
+        //TODO: get all accounts from database
         accounts = new ArrayList<>();
-        accounts.add(new Account("Account1", "default_user_image"));
-        accounts.add(new Account("Account2", "default_user_image"));
+        String query = "select acctname, acctphoto from account";
+        Cursor cursor = MainActivity.ABD.query(query);
+        int count;
+
+        if(cursor != null){
+            count = cursor.getCount();
+            //Move the current record pointer to the first row of the table
+            cursor.moveToFirst();
+        } else {
+            count = 0;
+        }
+
+        for(int i = 0; i < count; i++){
+            String accountName = cursor.getString(cursor.getColumnIndex(AccountBookDatabase.KEY_ACCTNAME));
+            String accountPhotoPath = cursor.getString(cursor.getColumnIndex(AccountBookDatabase.KEY_PHOTO_ACCT));
+            accounts.add(new Account(accountName, accountPhotoPath));
+            cursor.moveToNext();
+        }
 
         mAdapter = new AccountViewAdapter(this, R.layout.account_list_item, accounts);
         listView.setAdapter(mAdapter);
@@ -38,10 +58,9 @@ public class AccountList extends ActionBarActivity {
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Intent singlePictureIntent = new Intent(getApplicationContext(), CreateItem.class); //change activity name here
-                singlePictureIntent.putExtra("path", accounts.get(position).getPic());
-                singlePictureIntent.putExtra("name", accounts.get(position).getName());
-                startActivity(singlePictureIntent);
+                Intent singleAccountIntent = new Intent(getApplicationContext(), AccountDetail.class); //change activity name here
+                singleAccountIntent.putExtra("name", accounts.get(position).getName());
+                startActivity(singleAccountIntent);
             }
         });
 
@@ -94,7 +113,7 @@ public class AccountList extends ActionBarActivity {
         builder.setPositiveButton(R.string.ok,
                 new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
-                        //do something
+                        //TODO: delete table from database
                     }
                 });
         builder.setNegativeButton(R.string.cancel,

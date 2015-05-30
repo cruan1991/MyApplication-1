@@ -162,16 +162,42 @@ public class CreateAccount extends Activity {
                 }
 
                 //TODO: check if account name is used before. if used, showErrorDialog("This account name already exist.");
-                File old = new File(getRealPathFromURI(imageUri));
-                String imagePath = old.getName();
-                File f = new File(MainActivity.mDirPath + imagePath);
-                if (!f.exists())
-                {
-                    try {
-                        f.createNewFile();
-                        copyFile(old, f);
-                    } catch (IOException e) {
-                        e.printStackTrace();
+
+                String imagePath = "";
+                if(imageUri == null){
+                    Bitmap bmp = BitmapFactory.decodeResource(getResources(),
+                            R.drawable.default_user_image);
+                    imagePath = "default_user_image.png";
+                    File file = new File(MainActivity.mDirPath + imagePath);
+                    if (!file.exists()){
+                        FileOutputStream out = null;
+                        try {
+                            out = new FileOutputStream(file);
+                            bmp.compress(Bitmap.CompressFormat.PNG, 100, out);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        } finally {
+                            try {
+                                if (out != null) {
+                                    out.close();
+                                }
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }
+                } else {
+                    File old = new File(getRealPathFromURI(imageUri));
+                    imagePath = old.getName();
+                    File f = new File(MainActivity.mDirPath + imagePath);
+                    if (!f.exists())
+                    {
+                        try {
+                            f.createNewFile();
+                            copyFile(old, f);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
                     }
                 }
 

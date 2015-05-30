@@ -27,21 +27,11 @@ public class AccountViewAdapter extends ArrayAdapter<Account> {
         View row = inflater.inflate(R.layout.account_list_item, null);
         TextView textView = (TextView) row.findViewById(R.id.account_list_name);
         textView.setText(accounts.get(position).getName());
-//        try {
         ImageView imageView = (ImageView) row.findViewById(R.id.account_list_picture);
-//        imageView.setImageResource(R.drawable.default_user_image);
-        String PACKAGE_NAME = getContext().getPackageName();
-        int imgId = getContext().getResources().getIdentifier(PACKAGE_NAME+":drawable/"+accounts.get(position).getPic() , null, null);
         int target = parent.getHeight();
-        Bitmap thumbImage = ThumbnailUtils.extractThumbnail(BitmapFactory.decodeResource(getContext().getResources(), imgId), target, target);
+        Bitmap thumbImage = ThumbnailUtils.extractThumbnail(BitmapFactory.decodeFile(MainActivity.mDirPath + accounts.get(position).getPic()), target, target);
         imageView.setImageBitmap(thumbImage);
 
-//            InputStream inputStream = getContext().getAssets().open(accounts.get(position).getPic());
-//            Drawable drawable = Drawable.createFromStream(inputStream, null);
-//            imageView.setImageDrawable(drawable);
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
         return row;
     }
 }
