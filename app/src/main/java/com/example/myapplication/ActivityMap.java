@@ -1,24 +1,22 @@
 package com.example.myapplication;
 
-import android.app.LoaderManager;
-import android.content.ContentValues;
-import android.content.CursorLoader;
 import android.content.Loader;
 import android.database.Cursor;
-import android.os.AsyncTask;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.media.ThumbnailUtils;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
-import android.view.View;
-import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
-public class ActivityMap extends FragmentActivity implements LoaderManager.LoaderCallbacks<Cursor> {
+public class ActivityMap extends FragmentActivity {
 
     private GoogleMap map;
 
@@ -27,62 +25,41 @@ public class ActivityMap extends FragmentActivity implements LoaderManager.Loade
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         map = ((MapFragment) getFragmentManager().findFragmentById(R.id.map)).getMap();
-        // map.addMarker(new MarkerOptions().position(LOCATION_BUILDING).title("Find Me Here!"));
-        //get map fragment
-        //Enabling MyLocation layer of Google Map
         map.setMyLocationEnabled(true);
-        //Invoke LoaderCallbacks to retrieve and draw already saved locations in map
-        getLoaderManager().initLoader(0, null, this);
-    }
 
-    @Override
-    public Loader<Cursor> onCreateLoader(int arg0, Bundle arg1){
-        Loader<Cursor> c = new CursorLoader(this, LocationsContentProvider.CONTENT_URI, null, null, null, null);
-        //Uri to the content provider LocationsContentProvider
-        //Fetches all the rows from locations table
-//        getContentResolver().query(LocationsContentProvider.CONTENT_URI, null, null, null, null);
-        return c;
-    }
+        Bundle extras = getIntent().getExtras();
+        String accountName = extras.getString("name");
+        //TODO: check query
+        String query = "select itemname, itemphoto, latitude, longitude from item where acctname = '" + accountName + "'";
+        Cursor cursor = MainActivity.ABD.query(query);
 
-    @Override
-    public void onLoadFinished(Loader<Cursor> arg0, Cursor arg1){
         int locationCount = 0;
+        String itemName, photoPath;
         double lat = 0;
         double lng = 0;
-        float zoom = 0;
-        //Number of locations available in the SQLite database table
-        if(arg1 != null){
-            locationCount = arg1.getCount();
-            //Move the current record pointer to the first row of the table
-            arg1.moveToFirst();
+        float zoom = 10;
+        if(cursor != null){
+            locationCount = cursor.getCount();
+            cursor.moveToFirst();
         } else {
             locationCount = 0;
         }
 
         for(int i = 0; i < locationCount; i++){
-            //Get the latitude
-            lat = arg1.getDouble(arg1.getColumnIndex(LocationDB.LATITUDE));
-            //Get the longitude
-            lng = arg1.getDouble(arg1.getColumnIndex(LocationDB.LONGITUDE));
-            //Get the zoom level
-            zoom = (float) arg1.getDouble(arg1.getColumnIndex(LocationDB.ZOOM_LEVEL));
-            //Creating an instance of LatLng to plot the location in Google Maps
+            itemName = cursor.getString(cursor.getColumnIndex(AccountBookDatabase.KEY_ITEMNAME));
+            photoPath = cursor.getString(cursor.getColumnIndex(AccountBookDatabase.KEY_PHOTO_ITEM));
+            lat = cursor.getDouble(cursor.getColumnIndex(AccountBookDatabase.KEY_LAT));
+            lng = cursor.getDouble(cursor.getColumnIndex(AccountBookDatabase.KEY_LONG));
+            int target = 200;
+            Bitmap drawBmp = ThumbnailUtils.extractThumbnail(BitmapFactory.decodeFile(MainActivity.mDirPath + photoPath), target, target);
             LatLng point = new LatLng(lat, lng);
-            //Drawing the marker in the Google Maps
-            map.addMarker(new MarkerOptions().position(point));
-            //Traverse the pointer to the next row
-            arg1.moveToNext();
+            map.addMarker(new MarkerOptions().position(point).title(itemName).icon(BitmapDescriptorFactory.fromBitmap(drawBmp)));
+            cursor.moveToNext();
         }
 
         if(locationCount > 0){
-            //Moving CameraPosition to last clicked position
-            //Setting the zoom level in the map on last position is clicked
             CameraUpdate update = CameraUpdateFactory.newLatLngZoom(new LatLng(lat, lng), zoom);
             map.animateCamera(update);
         }
-    }
-
-    public void onLoaderReset(Loader<Cursor> arg0){
-
     }
 }
